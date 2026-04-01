@@ -1,0 +1,23 @@
+---
+description: Kafka topic constants, Flink operators & watermarks, Jackson Kafka sinks, Redis key namespaces
+globs: "**/*.{java,yml,yaml}"
+alwaysApply: false
+---
+
+# Infrastructure & Event Logic
+
+## Kafka
+
+- Define **all topic names** as **static constants** in `com.fraud.detection.config.KafkaConfig` (single source of truth). Do not scatter topic string literals in services or listeners.
+- Keep **consumer group IDs** and broker settings in `application.yml` / `FraudDetectionProperties` as appropriate.
+
+## Apache Flink
+
+- **Every operator** where the Flink API allows it (`fromSource`, `process`, `sinkTo`, etc.) must set **`name()`** and **`uid()`** so jobs are stable for **savepoints** and upgrades. (`KeyedStream#keyBy` in Flink 1.20 does not expose `name`/`uid` on the chain; document that limitation if you need a key-by name in the plan.)
+- **Kafka sinks** must serialize values with a **JSON schema** aligned with **Jackson** (same modules as `ObjectMapper` for records: `JavaTimeModule`, ISO-8601 dates).
+- **Time-based** logic must use a real **`WatermarkStrategy`** (e.g. bounded out-of-orderness + timestamp assigner on event time). **Do not** use `WatermarkStrategy.noWatermarks()` for production pipelines that rely on event time.
+- **VelocityKeyedProcessFunction** (and similar) should use **event-time** timers when the pipeline assigns event timestamps and watermarks.
+
+## Redis
+
+- **Namespace** all keys with a versioned prefix, e.g. `user:v1:daily_total:{userId}` or `user:v1:stats:{userId}` — avoid bare `user:{id}:...` without `v1` (or current schema version).

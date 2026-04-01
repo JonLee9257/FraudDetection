@@ -1,0 +1,32 @@
+---
+description: Java & Spring Boot standards — JDK 25, records, constructor injection, no Lombok
+globs: "**/*.java"
+alwaysApply: false
+---
+
+# Java & Spring Boot Standards
+
+## Language (JDK 25)
+
+- Prefer **modern Java** where it fits: **records**, **pattern matching** (`switch`, `instanceof`), **sealed classes** when modeling closed hierarchies.
+- Match the JDK in `pom.xml` (`java.version`); this repo uses **JDK 25** for language and bytecode.
+
+## Data & events
+
+- Prefer **`record`** over mutable classes for **DTOs**, **Kafka event** payloads, and small immutable value types.
+- Keep records **focused**; avoid embedding behavior that belongs in a domain service.
+
+## Spring
+
+- Use **constructor injection** only (`@Service`, `@Component`, `@Configuration` with final fields + single constructor). **Do not** use `@Autowired` on fields.
+- Prefer **`var`** for **local** variables when the type is obvious from the right-hand side (readability).
+
+## Logging & boilerplate
+
+- **Do not use Lombok** (`@Slf4j`, `@Data`, etc.). Use an explicit **SLF4J** logger: `private static final Logger log = LoggerFactory.getLogger(MyClass.class);`
+- Use **explicit constructors** (or compact canonical constructors on records) instead of Lombok-generated code.
+
+## Structure
+
+- Follow **Clean Code**: **small methods**, **single responsibility**, names that state intent.
+- Extract helpers when a method does more than one clear thing; avoid “god” services and mega-classes.

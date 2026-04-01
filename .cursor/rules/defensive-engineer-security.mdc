@@ -1,0 +1,30 @@
+---
+description: Defensive engineering — PII-safe logging, error handling, circuit breakers, null checks, Flink state cleanup
+globs: "**/*.java"
+alwaysApply: false
+---
+
+# Security & Error Handling (Defensive Engineer)
+
+## Logging and PII
+
+- **Never** log raw **PII** or payment-sensitive data: full PAN, CVV, full card number, full account number, full SSN, full legal name, full address, full phone, or full free-text customer notes.
+- Prefer **IDs** (surrogate keys, internal user IDs, hashed or masked last-4 only when the product allows), **redacted** strings, or **structured fields** with explicit masking.
+- Never log **entire** Kafka payloads or JSON bodies at INFO/DEBUG unless fields are **allowlisted** or scrubbed.
+
+## External I/O and failures
+
+- **Every** external call (HTTP, DB, Redis, Kafka client, third-party APIs) must be **defended**: handle **failure** with **specific** exception types or mapped domain errors where appropriate—don’t leave bare `catch (Exception e) {}` with no metric or log context.
+- **Synchronous** service-to-service calls should use a **circuit breaker** (e.g. Resilience4j with Spring Boot) when retries or bulkheads are required; document **open/half-open** behavior and fallbacks.
+
+## Kafka and events
+
+- **Null-check** (or `Optional`) **incoming** event fields **before** business logic; reject or route to DLQ with a **clear** reason when invalid—don’t assume non-null `userId`, `amount`, `timestamp`, etc.
+
+## Apache Flink state
+
+- **`ValueState`** (and similar managed state) used for **time-bounded** windows must have a **`Timer`** (or TTL/state expiry where supported) to **clear** or **expire** state so operators **don’t leak** memory on long-lived keys.
+
+## Tone
+
+- Prefer **explicit** failure paths and **observability** (correlation IDs, safe log fields) over silent failures.

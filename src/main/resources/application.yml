@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: fraud-detection-engine
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: ${REDIS_TIMEOUT:2s}
+
+fraud:
+  kafka:
+    consumer-group-id: ${FRAUD_KAFKA_CONSUMER_GROUP:fraud-velocity-flink}
+    alerts-listener-consumer-group-id: ${FRAUD_ALERTS_LISTENER_GROUP:fraud-eno-alerting-service}
+  velocity:
+    window-seconds: ${FRAUD_VELOCITY_WINDOW_SECONDS:60}
+    max-transactions-per-window: ${FRAUD_VELOCITY_MAX_TXN:3}
+  flink:
+    parallelism: ${FRAUD_FLINK_PARALLELISM:1}
+  redis:
+    daily-spend-limit-usd: ${FRAUD_DAILY_SPEND_LIMIT_USD:5000}
+    zone-id: ${FRAUD_REDIS_ZONE_ID:UTC}
+
+logging:
+  level:
+    com.fraud.detection: INFO
